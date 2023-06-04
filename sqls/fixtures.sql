@@ -10,13 +10,23 @@ TRUNCATE public.contact_tags;
 \echo "Generate fixtures..."
 
 SELECT public.insert_contact(
-    _name => 'Stéphane',
-    tags => ARRAY['Montrouge', 'Pongiste']
+    _name => 'User1',
+    tags => ARRAY['tag1', 'tag2']
 );
 
 SELECT public.insert_contact(
-    _name => 'Sarah',
-    tags => ARRAY['Montrouge', 'Flamenco']
+    _name => 'User2',
+    tags => ARRAY['tag2', 'tag3']
+);
+
+SELECT public.insert_contact(
+    _name => 'User3',
+    tags => ARRAY['tag4', 'tag5']
+);
+
+SELECT public.insert_contact(
+    _name => 'User4',
+    tags => null
 );
 
 \echo "Fixtures generated"

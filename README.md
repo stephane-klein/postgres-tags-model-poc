@@ -23,4 +23,10 @@ ON contact_tags.id = tag_id
 GROUP BY
     contacts.id,
     contacts.name;
+                  id                  | name  |  array_agg
+--------------------------------------+-------+-------------
+ 80918d5a-92dc-4ddf-ad46-f61060831c95 | User3 | {tag4,tag5}
+ 18f6dca3-1196-4e00-809c-cf19efdb3994 | User2 | {tag2,tag3}
+ 678f9c32-f410-4c45-9255-43463189e80d | User1 | {tag1,tag2}
+(3 rows)
 ```
