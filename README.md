@@ -90,6 +90,15 @@ SELECT 4
 Time: 0.006s
 ```
 
+Insert new contact with 3 tags:
+
+```
+SELECT public.insert_contact(
+    _name => 'User5',
+    tags => ARRAY['tag4', 'tag5', 'tag6']
+);
+```
+
 If you feel like it, you can use [pgcli](https://github.com/dbcli/pgcli) to experiment:
 
 ```sh
