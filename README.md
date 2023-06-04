@@ -30,3 +30,17 @@ GROUP BY
  678f9c32-f410-4c45-9255-43463189e80d | User1 | {tag1,tag2}
 (3 rows)
 ```
+
+If you feel like it, you can use [pgcli](https://github.com/dbcli/pgcli) to experiment:
+
+```sh
+$ pip install -U pgcli
+```
+
+```
+$ ./scripts/pgcli.sh
+Server: PostgreSQL 15.2 (Debian 15.2-1.pgdg110+1)
+Version: 3.5.0
+Home: http://pgcli.com
+postgres@127:postgres>
+```
