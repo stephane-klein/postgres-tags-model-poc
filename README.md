@@ -99,6 +99,16 @@ SELECT public.insert_contact(
 );
 ```
 
+Update contact tags:
+
+```
+UPDATE public.contacts
+SET
+    tags = (get_and_maybe_insert_tags(ARRAY['tag6', 'tag7']))
+WHERE
+    name = 'User5';
+```
+
 If you feel like it, you can use [pgcli](https://github.com/dbcli/pgcli) to experiment:
 
 ```sh

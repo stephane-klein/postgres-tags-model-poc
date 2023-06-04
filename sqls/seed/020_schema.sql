@@ -54,4 +54,34 @@ CREATE FUNCTION public.insert_contact(
     RETURNING id;
 $$ LANGUAGE SQL;
 
+DROP FUNCTION IF EXISTS public.get_and_maybe_insert_tags;
+CREATE FUNCTION public.get_and_maybe_insert_tags(
+    tag_names VARCHAR[]
+) RETURNS INTEGER[] AS $$
+    INSERT INTO
+        public.contact_tags
+    (
+        name
+    )
+    SELECT
+        tag_name
+    FROM
+        UNNEST(tag_names) AS tag_name
+    WHERE
+        tag_name NOT IN (
+            SELECT contact_tags.name
+            FROM public.contact_tags
+            WHERE contact_tags.name = tag_name
+        );
+
+    SELECT
+        ARRAY_AGG(contact_tags.id) AS tags
+    FROM
+        UNNEST(tag_names) AS tag_name
+    LEFT JOIN
+        public.contact_tags
+    ON
+        contact_tags.name = tag_name;
+$$ LANGUAGE SQL;
+
 \echo "Schema created"
