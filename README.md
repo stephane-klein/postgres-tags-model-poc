@@ -113,6 +113,30 @@ WHERE
     name = 'User5';
 ```
 
+Fetch all tags and the number of contacts associated with each:
+
+```sh
+SELECT
+    contact_tags.name,
+    COUNT(contacts.id) AS contact_count
+FROM
+    contact_tags
+LEFT JOIN
+    contacts
+ON
+    contact_tags.id = ANY(contacts.tags)
+GROUP BY contact_tags.id;
++------+---------------+
+| name | contact_count |
+|------+---------------|
+| tag1 | 1             |
+| tag2 | 2             |
+| tag3 | 1             |
+| tag4 | 1             |
+| tag5 | 1             |
++------+---------------+
+```
+
 If you feel like it, you can use [pgcli](https://github.com/dbcli/pgcli) to experiment:
 
 ```sh
