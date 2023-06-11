@@ -9,6 +9,8 @@ $ ./scripts/seed.sh
 $ ./scripts/fixtures.sh
 ```
 
+Retrieves all contacts with their associated tag names.
+
 ```
 postgres=# WITH exploded AS (
      SELECT
@@ -44,6 +46,8 @@ postgres=# WITH exploded AS (
 | 678f9c32-f410-4c45-9255-43463189e80d | User1 | ['tag1', 'tag2'] |
 +--------------------------------------+-------+------------------+
 ```
+
+Retrieves all contacts with the id and name of their associated tags in json format.
 
 ```
 postgres=# WITH exploded AS (
