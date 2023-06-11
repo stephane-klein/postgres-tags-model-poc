@@ -3,17 +3,19 @@
 SET client_min_messages TO WARNING;
 
 CREATE TABLE public.contact_tags (
-    id      SERIAL PRIMARY KEY,
-    name    TEXT NOT NULL
+    id             SERIAL PRIMARY KEY,
+    name           TEXT NOT NULL,
+    contact_counts INTEGER DEFAULT 0
 );
 CREATE INDEX contact_tags_name_index ON public.contact_tags (name);
+CREATE INDEX contact_tags_contact_counts_index ON public.contact_tags (contact_counts);
 
 CREATE TABLE public.contacts (
     id       UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name     VARCHAR NOT NULL,
     tags     INTEGER[]
 );
-CREATE INDEX contact_tags_index ON public.contacts USING GIN (tags);
+CREATE INDEX contacts_index ON public.contacts USING GIN (tags);
 
 DROP FUNCTION IF EXISTS public.insert_contact;
 CREATE FUNCTION public.insert_contact(
