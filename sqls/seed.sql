@@ -206,6 +206,7 @@ DROP FUNCTION IF EXISTS on_contacts_tags_deleted_then_compute_contact_tags_cache
 CREATE FUNCTION on_contacts_tags_deleted_then_compute_contact_tags_cache() RETURNS TRIGGER AS $$
 BEGIN
     PERFORM public.compute_contact_tags_cache(OLD.tags);
+    RETURN NULL;
 END;
 $$ LANGUAGE PLPGSQL SECURITY DEFINER;
 
