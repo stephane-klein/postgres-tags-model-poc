@@ -218,4 +218,29 @@ CREATE TRIGGER on_contacts_tags_deleted_then_compute_contact_tags_cache
 
 \echo "... on_contacts_tags_deleted_then_compute_contact_tags_cache created"
 
+\echo "on_contact_tags_deleted_then_remove_tag_in_contacts trigger creating..."
+
+DROP TRIGGER IF EXISTS on_contact_tags_deleted_then_remove_tag_in_contacts ON public.contact_tags;
+DROP FUNCTION IF EXISTS on_contact_tags_deleted_then_remove_tag_in_contacts();
+
+CREATE FUNCTION on_contact_tags_deleted_then_remove_tag_in_contacts() RETURNS TRIGGER AS $$
+BEGIN
+    UPDATE
+        public.contacts
+    SET
+        tags=ARRAY_REMOVE(contacts.tags, OLD.id)
+    WHERE
+        OLD.id = ANY(contacts.tags);
+    RETURN NULL;
+END;
+$$ LANGUAGE PLPGSQL SECURITY DEFINER;
+
+CREATE TRIGGER on_contact_tags_deleted_then_remove_tag_in_contacts
+    AFTER DELETE
+    ON public.contact_tags
+    FOR EACH ROW
+    EXECUTE PROCEDURE on_contact_tags_deleted_then_remove_tag_in_contacts();
+
+\echo "... on_contact_tags_deleted_then_remove_tag_in_contacts created"
+
 \echo "Schema created"
