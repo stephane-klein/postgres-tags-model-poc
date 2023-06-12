@@ -96,4 +96,125 @@ CREATE FUNCTION public.get_and_maybe_insert_tags(
         contact_tags.name = tag_name;
 $$ LANGUAGE SQL;
 
+DROP FUNCTION IF EXISTS public.compute_contact_tags_cache;
+CREATE FUNCTION public.compute_contact_tags_cache(
+    tag_ids INTEGER[]
+) RETURNS VOID AS $$
+    UPDATE
+        public.contact_tags
+    SET
+        contact_counts=contact_count_computation.contact_count
+    FROM (
+        SELECT
+            contact_tags.id AS contact_tag_id,
+            COUNT(contacts.id) AS contact_count
+        FROM
+            contact_tags
+        LEFT JOIN
+            contacts
+        ON
+            contact_tags.id = ANY(contacts.tags)
+        WHERE
+            contact_tags.id = ANY(tag_ids)
+        GROUP BY contact_tags.id
+    ) AS contact_count_computation
+    WHERE
+        contact_tags.id=contact_count_computation.contact_tag_id;
+$$ LANGUAGE SQL;
+
+DROP FUNCTION IF EXISTS public.compute_all_contact_tags_cache;
+CREATE FUNCTION public.compute_all_contact_tags_cache(
+) RETURNS VOID AS $$
+    UPDATE
+        public.contact_tags
+    SET
+        contact_counts=contact_count_computation.contact_count
+    FROM (
+        SELECT
+            contact_tags.id AS contact_tag_id,
+            COUNT(contacts.id) AS contact_count
+        FROM
+            contact_tags
+        LEFT JOIN
+            contacts
+        ON
+            contact_tags.id = ANY(contacts.tags)
+        GROUP BY contact_tags.id
+    ) AS contact_count_computation
+    WHERE
+        contact_tags.id=contact_count_computation.contact_tag_id;
+$$ LANGUAGE SQL;
+
+\echo "on_contacts_tags_updated_then_compute_contact_tags_cache trigger creating..."
+
+DROP TRIGGER IF EXISTS on_contacts_tags_updated_then_compute_contact_tags_cache ON public.contacts;
+DROP FUNCTION IF EXISTS on_contacts_tags_updated_then_compute_contact_tags_cache();
+
+CREATE FUNCTION on_contacts_tags_updated_then_compute_contact_tags_cache() RETURNS TRIGGER AS $$
+BEGIN
+    PERFORM public.compute_contact_tags_cache(
+        ARRAY(
+            SELECT DISTINCT *
+            FROM UNNEST(
+                ARRAY_CAT(
+                    OLD.tags,
+                    NEW.tags
+                )
+            )
+        )
+    );
+
+    RETURN NEW;
+END;
+$$ LANGUAGE PLPGSQL SECURITY DEFINER;
+
+CREATE TRIGGER on_contacts_tags_updated_then_compute_contact_tags_cache
+    AFTER UPDATE
+    ON public.contacts
+    FOR EACH ROW
+    WHEN (OLD.tags IS DISTINCT FROM  NEW.tags)
+    EXECUTE PROCEDURE on_contacts_tags_updated_then_compute_contact_tags_cache();
+
+\echo "... on_contacts_tags_updated_then_compute_contact_tags_cache created"
+
+\echo "on_contacts_tags_inserted_then_compute_contact_tags_cache trigger creating..."
+
+DROP TRIGGER IF EXISTS on_contacts_tags_inserted_then_compute_contact_tags_cache ON public.contacts;
+DROP FUNCTION IF EXISTS on_contacts_tags_inserted_then_compute_contact_tags_cache();
+
+CREATE FUNCTION on_contacts_tags_inserted_then_compute_contact_tags_cache() RETURNS TRIGGER AS $$
+BEGIN
+    PERFORM public.compute_contact_tags_cache(NEW.tags);
+
+    RETURN NEW;
+END;
+$$ LANGUAGE PLPGSQL SECURITY DEFINER;
+
+CREATE TRIGGER on_contacts_tags_inserted_then_compute_contact_tags_cache
+    AFTER INSERT
+    ON public.contacts
+    FOR EACH ROW
+    EXECUTE PROCEDURE on_contacts_tags_inserted_then_compute_contact_tags_cache();
+
+\echo "... on_contacts_tags_inserted_then_compute_contact_tags_cache created"
+
+\echo "on_contacts_tags_deleted_then_compute_contact_tags_cache trigger creating..."
+
+DROP TRIGGER IF EXISTS on_contacts_tags_deleted_then_compute_contact_tags_cache ON public.contacts;
+DROP FUNCTION IF EXISTS on_contacts_tags_deleted_then_compute_contact_tags_cache();
+
+CREATE FUNCTION on_contacts_tags_deleted_then_compute_contact_tags_cache() RETURNS TRIGGER AS $$
+BEGIN
+    PERFORM public.compute_contact_tags_cache(OLD.tags);
+END;
+$$ LANGUAGE PLPGSQL SECURITY DEFINER;
+
+CREATE TRIGGER on_contacts_tags_deleted_then_compute_contact_tags_cache
+    AFTER DELETE
+    ON public.contacts
+    FOR EACH ROW
+    EXECUTE PROCEDURE on_contacts_tags_deleted_then_compute_contact_tags_cache();
+
+\echo "... on_contacts_tags_deleted_then_compute_contact_tags_cache created"
+
 \echo "Schema created"
