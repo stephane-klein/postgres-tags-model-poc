@@ -137,6 +137,18 @@ GROUP BY contact_tags.id;
 +------+---------------+
 ```
 
+List all contact associated with id `2`:
+
+```sql
+SELECT
+    contacts.id,
+    contacts.name
+FROM
+    public.contacts
+WHERE
+    2 = ANY(contacts.tags)
+```
+
 If you feel like it, you can use [pgcli](https://github.com/dbcli/pgcli) to experiment:
 
 ```sh
