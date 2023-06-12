@@ -11,7 +11,7 @@ $ ./scripts/fixtures.sh
 
 Retrieves all contacts with their associated tag names.
 
-```
+```sql
 postgres=# WITH exploded AS (
      SELECT
          contacts.id,
@@ -49,7 +49,7 @@ postgres=# WITH exploded AS (
 
 Retrieves all contacts with the id and name of their associated tags in json format.
 
-```
+```sql
 postgres=# WITH exploded AS (
      SELECT
          contacts.id,
@@ -96,7 +96,7 @@ Time: 0.006s
 
 Insert new contact with 3 tags:
 
-```
+```sql
 SELECT public.insert_contact(
     _name => 'User5',
     tags => ARRAY['tag4', 'tag5', 'tag6']
@@ -105,7 +105,7 @@ SELECT public.insert_contact(
 
 Update contact tags:
 
-```
+```sql
 UPDATE public.contacts
 SET
     tags = (get_and_maybe_insert_tags(ARRAY['tag6', 'tag7']))
@@ -115,7 +115,7 @@ WHERE
 
 Fetch all tags and the number of contacts associated with each:
 
-```sh
+```sql
 SELECT
     contact_tags.name,
     COUNT(contacts.id) AS contact_count
@@ -155,7 +155,7 @@ If you feel like it, you can use [pgcli](https://github.com/dbcli/pgcli) to expe
 $ pip install -U pgcli
 ```
 
-```
+```sh
 $ ./scripts/pgcli.sh
 Server: PostgreSQL 15.2 (Debian 15.2-1.pgdg110+1)
 Version: 3.5.0
