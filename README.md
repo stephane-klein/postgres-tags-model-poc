@@ -17,7 +17,7 @@ postgres=# WITH exploded AS (
          contacts.id,
          tag_id
      FROM
-         public.contacts
+         main.contacts
      CROSS JOIN UNNEST(contacts.tags) AS tag_id
  )
  SELECT
@@ -25,13 +25,13 @@ postgres=# WITH exploded AS (
      contacts.name,
      ARRAY_AGG(contact_tags.name) AS tag_names
  FROM
-     public.contacts
+     main.contacts
  LEFT JOIN
      exploded
  ON
      contacts.id = exploded.id
  LEFT JOIN
-     public.contact_tags
+     main.contact_tags
  ON
      exploded.tag_id = contact_tags.id
  GROUP BY
@@ -55,7 +55,7 @@ postgres=# WITH exploded AS (
          contacts.id,
          tag_id
      FROM
-         public.contacts
+         main.contacts
      CROSS JOIN UNNEST(contacts.tags) AS tag_id
  )
  SELECT
@@ -70,13 +70,13 @@ postgres=# WITH exploded AS (
          )
      ) AS tags
  FROM
-     public.contacts
+     main.contacts
  LEFT JOIN
      exploded
  ON
      contacts.id = exploded.id
  LEFT JOIN
-     public.contact_tags
+     main.contact_tags
  ON
      exploded.tag_id = contact_tags.id
  GROUP BY
@@ -97,7 +97,7 @@ Time: 0.006s
 Insert new contact with 3 tags:
 
 ```sql
-SELECT public.insert_contact(
+SELECT main.insert_contact(
     _name => 'User5',
     tags => ARRAY['tag4', 'tag5', 'tag6']
 );
@@ -106,9 +106,9 @@ SELECT public.insert_contact(
 Update contact tags:
 
 ```sql
-UPDATE public.contacts
+UPDATE main.contacts
 SET
-    tags = (get_and_maybe_insert_tags(ARRAY['tag6', 'tag7']))
+    tags = (main.get_and_maybe_insert_tags(ARRAY['tag6', 'tag7']))
 WHERE
     name = 'User5';
 ```
@@ -120,9 +120,9 @@ SELECT
     contact_tags.name,
     COUNT(contacts.id) AS contact_count
 FROM
-    contact_tags
+    main.contact_tags
 LEFT JOIN
-    contacts
+    main.contacts
 ON
     contact_tags.id = ANY(contacts.tags)
 GROUP BY contact_tags.id;
@@ -144,7 +144,7 @@ SELECT
     contacts.id,
     contacts.name
 FROM
-    public.contacts
+    main.contacts
 WHERE
     2 = ANY(contacts.tags)
 ```

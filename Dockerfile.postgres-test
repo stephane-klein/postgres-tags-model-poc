@@ -1,0 +1,10 @@
+FROM postgres:15
+
+RUN apt update -y && \
+    apt install -y curl make patch
+
+RUN mkdir -p /pgtap/ && \
+    curl -sL https://github.com/theory/pgtap/archive/refs/tags/v1.2.0.tar.gz | tar xz --strip-components=1 -C /pgtap/
+RUN cd /pgtap/ && env PG_CONFIG=pg_config make && make install
+RUN PERL_MM_USE_DEFAULT=1  cpan TAP::Parser::SourceHandler::pgTAP
+ADD docker-entrypoint-initdb.d/ /docker-entrypoint-initdb.d/
