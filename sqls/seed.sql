@@ -5,7 +5,7 @@ SET client_min_messages TO WARNING;
 DROP SCHEMA IF EXISTS public CASCADE;
 
 CREATE SCHEMA IF NOT EXISTS utils;
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp" WITH SCHEMA main;
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp" WITH SCHEMA utils;
 
 \echo "Database cleaned"
 
