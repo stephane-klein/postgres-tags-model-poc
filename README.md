@@ -110,3 +110,25 @@ Version: 3.5.0
 Home: http://pgcli.com
 postgres@127:postgres>
 ```
+
+Execute pgTAP tests:
+
+```
+$ ./scripts/tests.sh
+/sqls/tests/test1.sql ..
+1..10
+ok 1 - Table main.contacts should exist
+ok 2 - Table main.contact_tags should exist
+ok 3
+ok 4
+ok 5
+ok 6
+ok 7
+ok 8
+ok 9
+ok 10
+ok
+All tests successful.
+Files=1, Tests=10,  0 wallclock secs ( 0.01 usr  0.00 sys +  0.01 cusr  0.00 csys =  0.02 CPU)
+Result: PASS
+```
