@@ -8,6 +8,63 @@ CREATE TABLE public.contact_tags (
 CREATE INDEX contact_tags_name_index ON public.contact_tags (name);
 CREATE INDEX contact_tags_contact_counts_index ON public.contact_tags (contact_counts);
 
+CREATE VIEW public.contacts_with_tag_names AS
+    WITH exploded AS (
+         SELECT
+             contacts.id,
+             tag_id
+         FROM
+             public.contacts
+         CROSS JOIN UNNEST(contacts.tags) AS tag_id
+     )
+     SELECT
+         contacts.*,
+         ARRAY_AGG(public.contact_tags.name) AS tag_names
+     FROM
+         public.contacts
+     LEFT JOIN
+         exploded
+     ON
+         contacts.id = exploded.id
+     LEFT JOIN
+         public.contact_tags
+     ON
+         exploded.tag_id = contact_tags.id
+     GROUP BY
+         contacts.id;
+
+CREATE VIEW public.contacts_with_tags AS
+    WITH exploded AS (
+         SELECT
+             contacts.id,
+             tag_id
+         FROM
+             public.contacts
+         CROSS JOIN UNNEST(contacts.tags) AS tag_id
+     )
+     SELECT
+         contacts.*,
+         JSON_AGG(
+            json_build_object(
+                 'id',
+                 public.contact_tags.id,
+                 'name',
+                 public.contact_tags.name
+            )
+        )
+     FROM
+         public.contacts
+     LEFT JOIN
+         exploded
+     ON
+         contacts.id = exploded.id
+     LEFT JOIN
+         public.contact_tags
+     ON
+         exploded.tag_id = contact_tags.id
+     GROUP BY
+         contacts.id;
+
 DROP FUNCTION IF EXISTS public.get_and_maybe_insert_contact_tags;
 CREATE FUNCTION public.get_and_maybe_insert_contact_tags(
     tag_names VARCHAR[]

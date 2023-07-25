@@ -12,86 +12,29 @@ $ ./scripts/fixtures.sh
 Retrieves all contacts with their associated tag names.
 
 ```sql
-postgres=# WITH exploded AS (
-     SELECT
-         contacts.id,
-         tag_id
-     FROM
-         public.contacts
-     CROSS JOIN UNNEST(contacts.tags) AS tag_id
- )
- SELECT
-     contacts.id,
-     contacts.name,
-     ARRAY_AGG(contact_tags.name) AS tag_names
- FROM
-     public.contacts
- LEFT JOIN
-     exploded
- ON
-     contacts.id = exploded.id
- LEFT JOIN
-     public.contact_tags
- ON
-     exploded.tag_id = contact_tags.id
- GROUP BY
-     contacts.id,
-     contacts.name;
-+--------------------------------------+-------+------------------+
-| id                                   | name  | tag_names        |
-|--------------------------------------+-------+------------------|
-| 1673cde1-534b-4517-b918-222ed7b3845f | User4 | [None]           |
-| 80918d5a-92dc-4ddf-ad46-f61060831c95 | User3 | ['tag4', 'tag5'] |
-| 18f6dca3-1196-4e00-809c-cf19efdb3994 | User2 | ['tag2', 'tag3'] |
-| 678f9c32-f410-4c45-9255-43463189e80d | User1 | ['tag1', 'tag2'] |
-+--------------------------------------+-------+------------------+
+postgres=# SELECT * FROM public.contacts_with_tag_names;
++--------------------------------------+-------+--------+------------------+
+| id                                   | name  | tags   | tag_names        |
+|--------------------------------------+-------+--------+------------------|
+| 0c6f17dd-03a3-484d-b4fb-619fcd9cd4f7 | User1 | [1, 2] | ['tag1', 'tag2'] |
+| a270741b-6a1a-4a2f-a847-eb37c522f596 | User2 | [2, 3] | ['tag2', 'tag3'] |
+| 019d3463-6294-4f30-af96-f3e8d698cd1d | User4 | <null> | [None]           |
+| 18a86616-a1f5-41b2-89ff-4dd51d132e58 | User3 | [4, 5] | ['tag4', 'tag5'] |
++--------------------------------------+-------+--------+------------------+
 ```
 
 Retrieves all contacts with the id and name of their associated tags in json format.
 
 ```sql
-postgres=# WITH exploded AS (
-     SELECT
-         contacts.id,
-         tag_id
-     FROM
-         public.contacts
-     CROSS JOIN UNNEST(contacts.tags) AS tag_id
- )
- SELECT
-     contacts.id,
-     contacts.name,
-     JSON_AGG(
-          json_build_object(
-             'id',
-             contact_tags.id,
-             'name',
-             contact_tags.name
-         )
-     ) AS tags
- FROM
-     public.contacts
- LEFT JOIN
-     exploded
- ON
-     contacts.id = exploded.id
- LEFT JOIN
-     public.contact_tags
- ON
-     exploded.tag_id = contact_tags.id
- GROUP BY
-     contacts.id,
-     contacts.name;
-+--------------------------------------+-------+-------------------------------------------------------------+
-| id                                   | name  | tags                                                        |
-|--------------------------------------+-------+-------------------------------------------------------------|
-| 1673cde1-534b-4517-b918-222ed7b3845f | User4 | [{"id" : null, "name" : null}]                              |
-| 80918d5a-92dc-4ddf-ad46-f61060831c95 | User3 | [{"id" : 9, "name" : "tag4"}, {"id" : 10, "name" : "tag5"}] |
-| 18f6dca3-1196-4e00-809c-cf19efdb3994 | User2 | [{"id" : 7, "name" : "tag2"}, {"id" : 8, "name" : "tag3"}]  |
-| 678f9c32-f410-4c45-9255-43463189e80d | User1 | [{"id" : 6, "name" : "tag1"}, {"id" : 7, "name" : "tag2"}]  |
-+--------------------------------------+-------+-------------------------------------------------------------+
-SELECT 4
-Time: 0.006s
+postgres=# SELECT * FROM public.contacts_with_tags;
++--------------------------------------+-------+--------+------------------------------------------------------------+
+| id                                   | name  | tags   | json_agg                                                   |
+|--------------------------------------+-------+--------+------------------------------------------------------------|
+| 4f026b11-e7c5-4143-b9f6-4105f79e17ee | User4 | <null> | [{"id" : null, "name" : null}]                             |
+| ae497426-f391-403b-a902-871f35fada89 | User1 | [1, 2] | [{"id" : 1, "name" : "tag1"}, {"id" : 2, "name" : "tag2"}] |
+| 343315b7-94b3-4ef3-975a-da49005b29b8 | User3 | [4, 5] | [{"id" : 4, "name" : "tag4"}, {"id" : 5, "name" : "tag5"}] |
+| 433bf6b7-3c9c-4035-b61c-57dc77a15862 | User2 | [2, 3] | [{"id" : 2, "name" : "tag2"}, {"id" : 3, "name" : "tag3"}] |
++--------------------------------------+-------+--------+------------------------------------------------------------+
 ```
 
 Insert new contact with 3 tags:
@@ -113,7 +56,7 @@ Update contact tags:
 ```sql
 UPDATE public.contacts
 SET
-    tags = (get_and_maybe_insert_tags(ARRAY['tag6', 'tag7']))
+    tags = (get_and_maybe_insert_contact_tags(ARRAY['tag6', 'tag7']))
 WHERE
     name = 'User5';
 ```
