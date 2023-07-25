@@ -2,22 +2,22 @@ SET client_min_messages TO WARNING;
 
 \echo "Database cleaning..."
 
-DROP SCHEMA IF EXISTS public CASCADE;
+CREATE SCHEMA IF NOT EXISTS utils;
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp" WITH SCHEMA utils;
 
-CREATE SCHEMA public;
-
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp" WITH SCHEMA public;
+DROP SCHEMA IF EXISTS main CASCADE;
+CREATE SCHEMA main;
 
 \echo "Database cleaned"
 
 \echo "Schema creating..."
 
-CREATE TABLE public.contacts (
-    id       UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+CREATE TABLE main.contacts (
+    id       UUID PRIMARY KEY DEFAULT utils.uuid_generate_v4(),
     name     VARCHAR NOT NULL,
     tags     INTEGER[]
 );
-CREATE INDEX contacts_index ON public.contacts USING GIN (tags);
+CREATE INDEX contacts_index ON main.contacts USING GIN (tags);
 
 \i contact_tags_system.sql
 

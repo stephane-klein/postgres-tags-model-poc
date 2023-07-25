@@ -12,7 +12,7 @@ $ ./scripts/fixtures.sh
 Retrieves all contacts with their associated tag names.
 
 ```sql
-postgres=# SELECT * FROM public.contacts_with_tag_names;
+postgres=# SELECT * FROM main.contacts_with_tag_names;
 +--------------------------------------+-------+--------+------------------+
 | id                                   | name  | tags   | tag_names        |
 |--------------------------------------+-------+--------+------------------|
@@ -26,7 +26,7 @@ postgres=# SELECT * FROM public.contacts_with_tag_names;
 Retrieves all contacts with the id and name of their associated tags in json format.
 
 ```sql
-postgres=# SELECT * FROM public.contacts_with_tags;
+postgres=# SELECT * FROM main.contacts_with_tags;
 +--------------------------------------+-------+--------+------------------------------------------------------------+
 | id                                   | name  | tags   | json_agg                                                   |
 |--------------------------------------+-------+--------+------------------------------------------------------------|
@@ -40,23 +40,23 @@ postgres=# SELECT * FROM public.contacts_with_tags;
 Insert new contact with 3 tags:
 
 ```sql
-INSERT INTO public.contacts
+INSERT INTO main.contacts
 (
     name,
     tags
 )
 VALUES (
     'User1',
-    get_and_maybe_insert_contact_tags(ARRAY['tag4', 'tag5', 'tag6'])
+    main.get_and_maybe_insert_contact_tags(ARRAY['tag4', 'tag5', 'tag6'])
 );
 ```
 
 Update contact tags:
 
 ```sql
-UPDATE public.contacts
+UPDATE main.contacts
 SET
-    tags = (get_and_maybe_insert_contact_tags(ARRAY['tag6', 'tag7']))
+    tags = (main.get_and_maybe_insert_contact_tags(ARRAY['tag6', 'tag7']))
 WHERE
     name = 'User5';
 ```
@@ -68,9 +68,9 @@ SELECT
     contact_tags.name,
     COUNT(contacts.id) AS contact_count
 FROM
-    contact_tags
+    main.contact_tags
 LEFT JOIN
-    contacts
+    main.contacts
 ON
     contact_tags.id = ANY(contacts.tags)
 GROUP BY contact_tags.id;
@@ -92,7 +92,7 @@ SELECT
     contacts.id,
     contacts.name
 FROM
-    public.contacts
+    main.contacts
 WHERE
     2 = ANY(contacts.tags)
 ```

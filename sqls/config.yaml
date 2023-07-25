@@ -1,4 +1,4 @@
-schema: "public"
+schema: "main"
 table_name: "contacts"
 base_table_name: "contact"
 table_primary_key_name: "id"
