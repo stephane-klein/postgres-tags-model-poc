@@ -1,5 +1,5 @@
 BEGIN;
-SELECT plan(7);
+SELECT plan(10);
 
 SELECT has_table('main'::name, 'contacts'::name);
 SELECT has_table('main'::name, 'contact_tags'::name);
@@ -93,6 +93,46 @@ SELECT results_eq(
             (4, 'tag4', 1),
             (5, 'tag5', 1),
             (6, 'tag6', 1)
+    $$
+);
+
+SELECT results_eq(
+    $$
+        SELECT name, tags FROM main.contacts ORDER BY name;
+    $$,
+    $$
+        VALUES
+            ('user 1'::VARCHAR, '{1,2,3}'::INTEGER[]),
+            ('user 2'::VARCHAR, '{4,5,6}'::INTEGER[])
+    $$
+);
+
+DELETE FROM main.contact_tags WHERE name = 'tag6';
+
+SELECT results_eq(
+    $$
+        SELECT name, tags FROM main.contacts ORDER BY name;
+    $$,
+    $$
+        VALUES
+            ('user 1'::VARCHAR, '{1,2,3}'::INTEGER[]),
+            ('user 2'::VARCHAR, '{4,5}'::INTEGER[])
+    $$
+);
+
+DELETE FROM main.contacts WHERE name = 'user 2';
+
+SELECT results_eq(
+    $$
+        SELECT id, name, contact_counts FROM main.contact_tags ORDER BY id;
+    $$,
+    $$
+        VALUES
+            (1, 'tag1', 1),
+            (2, 'tag2', 1),
+            (3, 'tag3', 1),
+            (4, 'tag4', 0),
+            (5, 'tag5', 0)
     $$
 );
 
