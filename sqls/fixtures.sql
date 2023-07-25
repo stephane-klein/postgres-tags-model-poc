@@ -9,24 +9,44 @@ TRUNCATE public.contact_tags;
 
 \echo "Generate fixtures..."
 
-SELECT public.insert_contact(
-    _name => 'User1',
-    tags => ARRAY['tag1', 'tag2']
+INSERT INTO public.contacts
+(
+    name,
+    tags
+)
+VALUES (
+    'User1',
+    get_and_maybe_insert_contact_tags(ARRAY['tag1', 'tag2'])
 );
 
-SELECT public.insert_contact(
-    _name => 'User2',
-    tags => ARRAY['tag2', 'tag3']
+INSERT INTO public.contacts
+(
+    name,
+    tags
+)
+VALUES (
+    'User2',
+    get_and_maybe_insert_contact_tags(ARRAY['tag2', 'tag3'])
 );
 
-SELECT public.insert_contact(
-    _name => 'User3',
-    tags => ARRAY['tag4', 'tag5']
+INSERT INTO public.contacts
+(
+    name,
+    tags
+)
+VALUES (
+    'User3',
+    get_and_maybe_insert_contact_tags(ARRAY['tag4', 'tag5'])
 );
 
-SELECT public.insert_contact(
-    _name => 'User4',
-    tags => null
+INSERT INTO public.contacts
+(
+    name,
+    tags
+)
+VALUES (
+    'User4',
+    null
 );
 
 \echo "Fixtures generated"

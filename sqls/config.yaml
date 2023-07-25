@@ -1,0 +1,3 @@
+schema: "public"
+table_name: "contacts"
+base_table_name: "contact"

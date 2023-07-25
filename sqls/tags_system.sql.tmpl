@@ -1,0 +1,171 @@
+-- vim: set syntax=sql:
+CREATE TABLE {{ .schema }}.{{ .base_table_name }}_tags (
+    id     SERIAL PRIMARY KEY,
+    name   TEXT NOT NULL,
+
+    {{ .base_table_name }}_counts INTEGER DEFAULT 0
+);
+CREATE INDEX {{ .base_table_name }}_tags_name_index ON {{ .schema }}.{{ .base_table_name }}_tags (name);
+CREATE INDEX {{ .base_table_name }}_tags_{{ .base_table_name }}_counts_index ON {{ .schema }}.{{ .base_table_name }}_tags ({{ .base_table_name }}_counts);
+
+DROP FUNCTION IF EXISTS {{ .schema }}.get_and_maybe_insert_{{ .base_table_name }}_tags;
+CREATE FUNCTION {{ .schema }}.get_and_maybe_insert_{{ .base_table_name }}_tags(
+    tag_names VARCHAR[]
+) RETURNS INTEGER[] AS $$
+    INSERT INTO
+        {{ .schema }}.{{ .base_table_name }}_tags
+    (
+        name
+    )
+    SELECT
+        tag_name
+    FROM
+        UNNEST(tag_names) AS tag_name
+    WHERE
+        tag_name NOT IN (
+            SELECT {{ .base_table_name }}_tags.name
+            FROM {{ .schema }}.{{ .base_table_name }}_tags
+            WHERE {{ .base_table_name }}_tags.name = tag_name
+        );
+
+    SELECT
+        ARRAY_AGG({{ .base_table_name }}_tags.id) AS tags
+    FROM
+        UNNEST(tag_names) AS tag_name
+    LEFT JOIN
+        {{ .schema }}.{{ .base_table_name }}_tags
+    ON
+        {{ .base_table_name }}_tags.name = tag_name;
+$$ LANGUAGE SQL;
+
+DROP FUNCTION IF EXISTS {{ .schema }}.compute_{{ .base_table_name }}_tags_cache;
+CREATE FUNCTION {{ .schema }}.compute_{{ .base_table_name }}_tags_cache(
+    tag_ids INTEGER[]
+) RETURNS VOID AS $$
+    UPDATE
+        {{ .schema }}.{{ .base_table_name }}_tags
+    SET
+        {{ .base_table_name }}_counts={{ .base_table_name }}_count_computation.{{ .base_table_name }}_count
+    FROM (
+        SELECT
+            {{ .base_table_name }}_tags.id AS {{ .base_table_name }}_tag_id,
+            COUNT({{ .table_name }}.id) AS {{ .base_table_name }}_count
+        FROM
+            {{ .schema }}.{{ .base_table_name }}_tags
+        LEFT JOIN
+            {{ .schema }}.{{ .table_name }}
+        ON
+            {{ .base_table_name }}_tags.id = ANY({{ .table_name }}.tags)
+        WHERE
+            {{ .base_table_name }}_tags.id = ANY(tag_ids)
+        GROUP BY {{ .base_table_name }}_tags.id
+    ) AS {{ .base_table_name }}_count_computation
+    WHERE
+        {{ .base_table_name }}_tags.id={{ .base_table_name }}_count_computation.{{ .base_table_name }}_tag_id;
+$$ LANGUAGE SQL;
+
+DROP FUNCTION IF EXISTS {{ .schema }}.compute_all_{{ .base_table_name }}_tags_cache;
+CREATE FUNCTION {{ .schema }}.compute_all_{{ .base_table_name }}_tags_cache(
+) RETURNS VOID AS $$
+    UPDATE
+        {{ .schema }}.{{ .base_table_name }}_tags
+    SET
+        {{ .base_table_name }}_counts={{ .base_table_name }}_count_computation.{{ .base_table_name }}_count
+    FROM (
+        SELECT
+            {{ .base_table_name }}_tags.id AS {{ .base_table_name }}_tag_id,
+            COUNT({{ .table_name }}.id) AS {{ .base_table_name }}_count
+        FROM
+            {{ .schema }}.{{ .base_table_name }}_tags
+        LEFT JOIN
+            {{ .schema }}.{{ .table_name }}
+        ON
+            {{ .base_table_name }}_tags.id = ANY({{ .table_name }}.tags)
+        GROUP BY {{ .base_table_name }}_tags.id
+    ) AS {{ .base_table_name }}_count_computation
+    WHERE
+        {{ .base_table_name }}_tags.id={{ .base_table_name }}_count_computation.{{ .base_table_name }}_tag_id;
+$$ LANGUAGE SQL;
+
+DROP TRIGGER IF EXISTS on_{{ .base_table_name }}_tags_updated_then_compute_{{ .base_table_name }}_tags_cache ON {{ .schema }}.{{ .table_name }};
+DROP FUNCTION IF EXISTS {{ .schema }}.on_{{ .base_table_name }}_tags_updated_then_compute_{{ .base_table_name }}_tags_cache();
+
+CREATE FUNCTION {{ .schema }}.on_{{ .base_table_name }}_tags_updated_then_compute_{{ .base_table_name }}_tags_cache() RETURNS TRIGGER AS $$
+BEGIN
+    PERFORM {{ .schema }}.compute_{{ .base_table_name }}_tags_cache(
+        ARRAY(
+            SELECT DISTINCT *
+            FROM UNNEST(
+                ARRAY_CAT(
+                    OLD.tags,
+                    NEW.tags
+                )
+            )
+        )
+    );
+
+    RETURN NEW;
+END;
+$$ LANGUAGE PLPGSQL SECURITY DEFINER;
+
+CREATE TRIGGER on_{{ .base_table_name }}_tags_updated_then_compute_{{ .base_table_name }}_tags_cache
+    AFTER UPDATE
+    ON {{ .schema }}.{{ .table_name }}
+    FOR EACH ROW
+    WHEN (OLD.tags IS DISTINCT FROM  NEW.tags)
+    EXECUTE PROCEDURE {{ .schema }}.on_{{ .base_table_name }}_tags_updated_then_compute_{{ .base_table_name }}_tags_cache();
+
+DROP TRIGGER IF EXISTS on_{{ .base_table_name }}_tags_inserted_then_compute_{{ .base_table_name }}_tags_cache ON {{ .schema }}.{{ .table_name }};
+DROP FUNCTION IF EXISTS {{ .schema }}.on_{{ .base_table_name }}_tags_inserted_then_compute_{{ .base_table_name }}_tags_cache();
+
+CREATE FUNCTION {{ .schema }}.on_{{ .base_table_name }}_tags_inserted_then_compute_{{ .base_table_name }}_tags_cache() RETURNS TRIGGER AS $$
+BEGIN
+    PERFORM {{ .schema }}.compute_{{ .base_table_name }}_tags_cache(NEW.tags);
+
+    RETURN NEW;
+END;
+$$ LANGUAGE PLPGSQL SECURITY DEFINER;
+
+CREATE TRIGGER on_{{ .base_table_name }}_tags_inserted_then_compute_{{ .base_table_name }}_tags_cache
+    AFTER INSERT
+    ON {{ .schema }}.{{ .table_name }}
+    FOR EACH ROW
+    EXECUTE PROCEDURE {{ .schema }}.on_{{ .base_table_name }}_tags_inserted_then_compute_{{ .base_table_name }}_tags_cache();
+
+DROP TRIGGER IF EXISTS on_contacs_tags_deleted_then_compute_{{ .base_table_name }}_tags_cache ON {{ .schema }}.{{ .table_name }};
+DROP FUNCTION IF EXISTS {{ .schema }}.on_contacs_tags_deleted_then_compute_{{ .base_table_name }}_tags_cache();
+
+CREATE FUNCTION {{ .schema }}.on_{{ .base_table_name }}_tags_deleted_then_compute_{{ .base_table_name }}_tags_cache() RETURNS TRIGGER AS $$
+BEGIN
+    PERFORM {{ .schema }}.compute_{{ .base_table_name }}_tags_cache(OLD.tags);
+    RETURN NULL;
+END;
+$$ LANGUAGE PLPGSQL SECURITY DEFINER;
+
+CREATE TRIGGER on_{{ .base_table_name }}_tags_deleted_then_compute_{{ .base_table_name }}_tags_cache
+    AFTER DELETE
+    ON {{ .schema }}.{{ .table_name }}
+    FOR EACH ROW
+    EXECUTE PROCEDURE {{ .schema }}.on_{{ .base_table_name }}_tags_deleted_then_compute_{{ .base_table_name }}_tags_cache();
+
+DROP TRIGGER IF EXISTS on_{{ .base_table_name }}_tags_deleted_then_remove_tag_in_{{ .table_name }} ON {{ .schema }}.{{ .base_table_name }}_tags;
+DROP FUNCTION IF EXISTS {{ .schema }}.on_{{ .base_table_name }}_tags_deleted_then_remove_tag_in_{{ .table_name }}();
+
+CREATE FUNCTION {{ .schema }}.on_{{ .base_table_name }}_tags_deleted_then_remove_tag_in_{{ .table_name }}() RETURNS TRIGGER AS $$
+BEGIN
+    UPDATE
+        {{ .schema }}.{{ .table_name }}
+    SET
+        tags=ARRAY_REMOVE({{ .table_name }}.tags, OLD.id)
+    WHERE
+        OLD.id = ANY({{ .table_name }}.tags);
+    RETURN NULL;
+END;
+$$ LANGUAGE PLPGSQL SECURITY DEFINER;
+
+CREATE TRIGGER on_{{ .base_table_name }}_tags_deleted_then_remove_tag_in_{{ .table_name }}
+    AFTER DELETE
+    ON {{ .schema }}.{{ .base_table_name }}_tags
+    FOR EACH ROW
+    EXECUTE PROCEDURE {{ .schema }}.on_{{ .base_table_name }}_tags_deleted_then_remove_tag_in_{{ .table_name }}();
+

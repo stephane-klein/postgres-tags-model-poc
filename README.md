@@ -97,9 +97,14 @@ Time: 0.006s
 Insert new contact with 3 tags:
 
 ```sql
-SELECT public.insert_contact(
-    _name => 'User5',
-    tags => ARRAY['tag4', 'tag5', 'tag6']
+INSERT INTO public.contacts
+(
+    name,
+    tags
+)
+VALUES (
+    'User1',
+    get_and_maybe_insert_contact_tags(ARRAY['tag4', 'tag5', 'tag6'])
 );
 ```
 
