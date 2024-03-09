@@ -94,14 +94,115 @@ GROUP BY contact_tags.id;
 List all contact associated with id `2`:
 
 ```sql
-SELECT
-    contacts.id,
-    contacts.name
-FROM
-    main.contacts
-WHERE
-    2 = ANY(contacts.tags)
+postgres=# SELECT * FROM main.contacts_with_tag_names WHERE 2 = ANY(tags);
++--------------------------------------+-------+--------+------------------+
+| id                                   | name  | tags   | tag_names        |
+|--------------------------------------+-------+--------+------------------|
+| 92696bf1-7285-4ec0-bf90-39653d53a2d0 | User2 | [2, 3] | ['tag2', 'tag3'] |
+| a155c3b6-15b4-4f93-8ca8-9fc0634069af | User1 | [1, 2] | ['tag1', 'tag2'] |
++--------------------------------------+-------+--------+------------------+
+SELECT 2
+Time: 0.011s
 ```
+
+List all contact associated with `tag2`:
+
+```
+postgres# SELECT * FROM main.contacts_with_tag_names WHERE (SELECT id FROM main.con
+ tact_tags WHERE name='tag2') = ANY(tags);
++--------------------------------------+-------+--------+------------------+
+| id                                   | name  | tags   | tag_names        |
+|--------------------------------------+-------+--------+------------------|
+| 92696bf1-7285-4ec0-bf90-39653d53a2d0 | User2 | [2, 3] | ['tag2', 'tag3'] |
+| a155c3b6-15b4-4f93-8ca8-9fc0634069af | User1 | [1, 2] | ['tag1', 'tag2'] |
++--------------------------------------+-------+--------+------------------+
+SELECT 2
+Time: 0.007s
+```
+
+Another query based on [`&&` operator](https://www.postgresql.org/docs/16/functions-array.html):
+
+```
+postgres# (
+    SELECT *
+    FROM main.contacts_with_tag_names
+    WHERE (
+        tags && (
+            SELECT ARRAY_AGG(id) FROM main.contact_tags WHERE name = ANY(ARRAY['tag2'])
+        )
+    )
+);
++--------------------------------------+-------+--------+------------------+
+| id                                   | name  | tags   | tag_names        |
+|--------------------------------------+-------+--------+------------------|
+| a155c3b6-15b4-4f93-8ca8-9fc0634069af | User1 | [1, 2] | ['tag1', 'tag2'] |
+| 92696bf1-7285-4ec0-bf90-39653d53a2d0 | User2 | [2, 3] | ['tag2', 'tag3'] |
++--------------------------------------+-------+--------+------------------+
+```
+
+Query to filter contacts which are linked to `tag1` or `tag5`:
+
+```
+postgres# (
+    SELECT *
+    FROM main.contacts_with_tag_names
+    WHERE (
+        tags && (
+            SELECT ARRAY_AGG(id) FROM main.contact_tags WHERE name = ANY(ARRAY['tag1', 'tag5'])
+        )
+    )
+);
++--------------------------------------+-------+--------+------------------+
+| id                                   | name  | tags   | tag_names        |
+|--------------------------------------+-------+--------+------------------|
+| a155c3b6-15b4-4f93-8ca8-9fc0634069af | User1 | [1, 2] | ['tag1', 'tag2'] |
+| 2a64014e-8e60-4959-b333-f385b61124b8 | User3 | [4, 5] | ['tag4', 'tag5'] |
++--------------------------------------+-------+--------+------------------+
+SELECT 2
+Time: 0.007s
+```
+
+Query to filter contacts which are linked to `tag2` and `tag3`, based on [`<@`](https://www.postgresql.org/docs/16/functions-array.html) operator:
+
+```
+postgres# (
+    SELECT *
+    FROM main.contacts_with_tag_names
+    WHERE (
+        tags <@ (
+            SELECT ARRAY_AGG(id) FROM main.contact_tags WHERE name = ANY(ARRAY['tag2', 'tag3'])
+        )
+    )
+);
++--------------------------------------+-------+--------+------------------+
+| id                                   | name  | tags   | tag_names        |
+|--------------------------------------+-------+--------+------------------|
+| 92696bf1-7285-4ec0-bf90-39653d53a2d0 | User2 | [2, 3] | ['tag2', 'tag3'] |
++--------------------------------------+-------+--------+------------------+
+SELECT 1
+Time: 0.007s
+```
+
+Query to filter contacts which are linked to (`tag2` and `tag3`) or `tag1`:
+
+```
+postgres# (
+    SELECT *
+    FROM main.contacts_with_tag_names
+    WHERE (
+        (
+            tags <@ (
+                SELECT ARRAY_AGG(id) FROM main.contact_tags WHERE name = ANY(ARRAY['tag2', 'tag3'])
+            )
+        ) OR (
+            tags && (
+                SELECT ARRAY_AGG(id) FROM main.contact_tags WHERE name = ANY(ARRAY['tag1'])
+            )
+        )
+    )
+);
+```
+
 
 If you feel like it, you can use [pgcli](https://github.com/dbcli/pgcli) to experiment:
 
