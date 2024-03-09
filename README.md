@@ -9,6 +9,12 @@ $ ./scripts/seed.sh
 $ ./scripts/fixtures.sh
 ```
 
+Enter in Postgres:
+```
+./scripts/enter-in-pg.sh
+postgres=#
+```
+
 Retrieves all contacts with their associated tag names.
 
 ```sql
