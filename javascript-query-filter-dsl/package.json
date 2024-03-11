@@ -1,0 +1,16 @@
+{
+    "name": "javascript-query-filter-dsl",
+    "version": "1.0.0",
+    "description": "",
+    "type": "module",
+    "main": "index.js",
+    "scripts": {
+        "peggy": "peggy --format es -o query-filter.js query-filter.pegjs"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "peggy": "4.0.2"
+    }
+}
