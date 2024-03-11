@@ -1,5 +1,7 @@
 Database model POC based on [Tags and Postgres Arrays, a Purrrfect Combination](https://www.crunchydata.com/blog/tags-aand-postgres-arrays-a-purrfect-combination) article.
 
+The [`query-string-js-parser/`](./query-string-js-parser/) folder contains a Javascript parser that converts a string query into sql.
+
 ```sh
 $ docker compose up -d --wait
 ```
