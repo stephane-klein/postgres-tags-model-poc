@@ -198,17 +198,17 @@ function peg$parse(input, options) {
 
   var peg$f0 = function(head, tail) {
       return tail.reduce(function(result, element) {
-            if (element[1] === "or") { return result + " or " + element[3]; }
-            if (element[1] === "and") { return result + " and " + element[3]; }
+            if (element[1] === "or") { return `( ${result} OR ${element[3]})`; }
+            if (element[1] === "and") { return `( ${result} AND ${element[3]})`; }
       }, head);
   };
   var peg$f1 = function(head, tail) {
       return tail.reduce(function(result, element) {
-            if (element[1] === "or") { return result + " or " + element[3]; }
-            if (element[1] === "and") { return result + " and " + element[3]; }
+            if (element[1] === "or") { return result + " OR " + element[3]; }
+            if (element[1] === "and") { return result + " AND " + element[3]; }
       }, head);
   };
-  var peg$f2 = function() { return text(); };
+  var peg$f2 = function() { return `'${text()}' = ANY ($toto) `; };
   var peg$currPos = options.peg$currPos | 0;
   var peg$savedPos = peg$currPos;
   var peg$posDetailsCache = [{ line: 1, column: 1 }];

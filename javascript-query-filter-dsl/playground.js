@@ -2,8 +2,23 @@
 
 import { parse } from "./query-filter.js";
 
-console.log(parse("Tag2 and Tag3"));
-console.log(parse("(Tag2 and Tag3)"));
-console.log(parse("(Tag2 and Tag3) or Tag8"));
-console.log(parse("Tag1 or (Tag2 and Tag3)"));
-console.log(parse("Tag1 or (Tag2 and Tag3 or tag8)"));
+class Parse {
+
+    constructor(table, column) {
+        this.table = table;
+        this.column = column;
+    }
+
+    parse(txt) {
+        return `SELECT * FROM ${this.table} WHERE ${parse(txt)};`.replaceAll('$toto', this.column);
+    }
+}
+
+let p = new Parse('article', 'tags');
+
+console.log(p.parse("Tag2"));
+console.log(p.parse("Tag2 and Tag3"));
+console.log(p.parse("(Tag2 and Tag3)"));
+console.log(p.parse("(Tag2 and Tag3) or Tag8"));
+console.log(p.parse("Tag1 or (Tag2 and Tag3)"));
+console.log(p.parse("Tag1 or (Tag2 and Tag3 or tag8)"));
