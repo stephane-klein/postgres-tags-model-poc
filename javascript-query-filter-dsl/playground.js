@@ -10,7 +10,8 @@ class Parse {
     }
 
     parse(txt) {
-        return `SELECT * FROM ${this.table} WHERE ${parse(txt)};`.replaceAll('$toto', this.column);
+        const raw = parse(txt, {column : this.column});
+        return `SELECT * FROM ${this.table} WHERE ${raw};`;
     }
 }
 

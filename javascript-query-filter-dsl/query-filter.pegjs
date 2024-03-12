@@ -25,7 +25,7 @@ factor
   / tagname
 
 tagname "tagname"
-  = _ [a-z]i[0-9a-z]i* _ { return `'${text()}' = ANY ($toto) `; }
+  = _ [a-z]i[0-9a-z]i* _ { return `'${text()}' = ANY (${options.column}) `; }
 
 _ "whitespace"
   = [ \t\n\r]*
