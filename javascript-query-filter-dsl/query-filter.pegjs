@@ -1,31 +1,30 @@
-/*
-associative "associative"
-  = "(" _ expression _ ")" { return text(); }
-  / expression { return text(); }
-*/
-
-expression "expression"
-  = head:term tail:(_ ("or" / "and") _ term)* {
-      return tail.reduce(function(result, element) {
-            if (element[1] === "or") { return `(${result} OR ${element[3]})`; }
-            if (element[1] === "and") { return `(${result} AND ${element[3]})`; }
-      }, head);
+expression =
+  head:bloc
+  tail:(op:operator bloc) *
+  {
+    //console.log("tail", tail, "head", head);
+    return tail.reduce((result, element) => {
+      //console.log("debug", element);
+      return `${result} ${element[0]} ${element[1]}`;
+    }, head);
   }
 
-term "term"
-  = head:factor tail:(_ ("or" / "and") _ factor)* {
-      return tail.reduce(function(result, element) {
-            if (element[1] === "or") { return result + " OR " + element[3]; }
-            if (element[1] === "and") { return result + " AND " + element[3]; }
-      }, head);
+parenthesis =
+  begin_parenthesis content:(parenthesis / expression ) end_parenthesis
+  {
+    return `(\n  ${content}\n)`;
   }
-
-factor
-  = ("(" _ @expression _ ")")
-  / tagname
 
 tagname "tagname"
-  = _ [a-z]i[0-9a-z]i* _ { return `'${text()}' = ANY (${options.column}) `; }
+  = ws [a-zA-Z][_0-9a-zA-Z]* ws { return `'${text()}' = ANY (${options.column}) `; }
 
-_ "whitespace"
+begin_parenthesis = ws "(" ws   { return "(";   }
+end_parenthesis   = ws ")" ws   { return ")";   }
+and               = ws "and" ws { return "AND"; }
+or                = ws "or"  ws { return "OR";  }
+operator          = and / or
+
+ws "whitespace"
   = [ \t\n\r]*
+
+bloc = tagname / parenthesis

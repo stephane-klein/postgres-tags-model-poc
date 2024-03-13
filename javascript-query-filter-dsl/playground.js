@@ -10,6 +10,7 @@ class Parse {
     }
 
     parse(txt) {
+        console.log("input:", txt);
         const raw = parse(txt, {column : this.column});
         return `SELECT * FROM ${this.table} WHERE ${raw};`;
     }
