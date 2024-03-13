@@ -198,7 +198,7 @@ function peg$parse(input, options) {
     //console.log("tail", tail, "head", head);
     return tail.reduce((result, element) => {
       //console.log("debug", element);
-      return `${result} ${element[0]} ${element[1]}`;
+      return `${result} ${element[0]} ${element[2]}`;
     }, head);
   };
   var peg$f1 = function(content) {
@@ -372,7 +372,7 @@ function peg$parse(input, options) {
   }
 
   function peg$parseexpression() {
-    var s0, s1, s2, s3, s4, s5;
+    var s0, s1, s2, s3, s4, s5, s6;
 
     s0 = peg$currPos;
     s1 = peg$parsebloc();
@@ -381,9 +381,10 @@ function peg$parse(input, options) {
       s3 = peg$currPos;
       s4 = peg$parseoperator();
       if (s4 !== peg$FAILED) {
-        s5 = peg$parsebloc();
-        if (s5 !== peg$FAILED) {
-          s4 = [s4, s5];
+        s5 = peg$parsews();
+        s6 = peg$parsebloc();
+        if (s6 !== peg$FAILED) {
+          s4 = [s4, s5, s6];
           s3 = s4;
         } else {
           peg$currPos = s3;
@@ -398,9 +399,10 @@ function peg$parse(input, options) {
         s3 = peg$currPos;
         s4 = peg$parseoperator();
         if (s4 !== peg$FAILED) {
-          s5 = peg$parsebloc();
-          if (s5 !== peg$FAILED) {
-            s4 = [s4, s5];
+          s5 = peg$parsews();
+          s6 = peg$parsebloc();
+          if (s6 !== peg$FAILED) {
+            s4 = [s4, s5, s6];
             s3 = s4;
           } else {
             peg$currPos = s3;

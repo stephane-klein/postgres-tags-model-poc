@@ -1,11 +1,11 @@
 expression =
   head:bloc
-  tail:(op:operator bloc) *
+  tail:(op:operator ws bloc) *
   {
     //console.log("tail", tail, "head", head);
     return tail.reduce((result, element) => {
       //console.log("debug", element);
-      return `${result} ${element[0]} ${element[1]}`;
+      return `${result} ${element[0]} ${element[2]}`;
     }, head);
   }
 
