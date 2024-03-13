@@ -9,6 +9,12 @@ expression =
     }, head);
   }
 
+not =
+  "not" ws b:bloc
+  {
+    return `NOT( ${b} )`;
+  }
+
 parenthesis =
   begin_parenthesis content:(parenthesis / expression ) end_parenthesis
   {
@@ -27,4 +33,4 @@ operator          = and / or
 ws "whitespace"
   = [ \t\n\r]*
 
-bloc = tagname / parenthesis
+bloc = not / tagname / parenthesis

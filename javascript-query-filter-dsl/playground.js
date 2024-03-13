@@ -24,3 +24,6 @@ console.log(p.parse("(Tag2 and Tag3)"));
 console.log(p.parse("(Tag2 and Tag3) or Tag8"));
 console.log(p.parse("Tag1 or (Tag2 and Tag3)"));
 console.log(p.parse("Tag1 or (Tag2 and Tag3 or tag8)"));
+
+console.log(p.parse("not Tag2"));
+console.log(p.parse("Tag1 or not (Tag2 and Tag3)"));
