@@ -8,6 +8,7 @@ CREATE TABLE {{ .schema }}.{{ .base_table_name }}_tags (
 CREATE INDEX {{ .base_table_name }}_tags_name_index ON {{ .schema }}.{{ .base_table_name }}_tags (name);
 CREATE INDEX {{ .base_table_name }}_tags_{{ .base_table_name }}_counts_index ON {{ .schema }}.{{ .base_table_name }}_tags ({{ .base_table_name }}_counts);
 
+DROP VIEW IF EXISTS {{ .schema }}.{{ .table_name }}_with_tag_names CASCADE;
 CREATE VIEW {{ .schema }}.{{ .table_name }}_with_tag_names AS
     WITH exploded AS (
          SELECT
@@ -33,6 +34,7 @@ CREATE VIEW {{ .schema }}.{{ .table_name }}_with_tag_names AS
      GROUP BY
          {{ .table_name }}.{{ .table_primary_key_name }};
 
+DROP VIEW IF EXISTS {{ .schema }}.{{ .table_name }}_with_tags CASCADE;
 CREATE VIEW {{ .schema }}.{{ .table_name }}_with_tags AS
     WITH exploded AS (
          SELECT
