@@ -8,6 +8,7 @@ CREATE TABLE main.contact_tags (
 CREATE INDEX contact_tags_name_index ON main.contact_tags (name);
 CREATE INDEX contact_tags_contact_counts_index ON main.contact_tags (contact_counts);
 
+DROP VIEW IF EXISTS main.contacts_with_tag_names CASCADE;
 CREATE VIEW main.contacts_with_tag_names AS
     WITH exploded AS (
          SELECT
@@ -33,6 +34,7 @@ CREATE VIEW main.contacts_with_tag_names AS
      GROUP BY
          contacts.id;
 
+DROP VIEW IF EXISTS main.contacts_with_tags CASCADE;
 CREATE VIEW main.contacts_with_tags AS
     WITH exploded AS (
          SELECT
