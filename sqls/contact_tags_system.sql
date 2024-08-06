@@ -20,7 +20,7 @@ CREATE VIEW main.contacts_with_tag_names AS
      )
      SELECT
          contacts.*,
-         ARRAY_AGG(main.contact_tags.name) AS tag_names
+         ARRAY_AGG(note_tags.name) FILTER (WHERE note_tags.name IS NOT NULL) AS tag_names
      FROM
          main.contacts
      LEFT JOIN

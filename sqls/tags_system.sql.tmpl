@@ -20,7 +20,7 @@ CREATE VIEW {{ .schema }}.{{ .table_name }}_with_tag_names AS
      )
      SELECT
          {{ .table_name }}.*,
-         ARRAY_AGG({{ .schema }}.{{ .base_table_name }}_tags.name) AS tag_names
+         ARRAY_AGG(note_tags.name) FILTER (WHERE note_tags.name IS NOT NULL) AS tag_names
      FROM
          {{ .schema }}.{{ .table_name }}
      LEFT JOIN
