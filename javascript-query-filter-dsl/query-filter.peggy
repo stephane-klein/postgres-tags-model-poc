@@ -22,7 +22,7 @@ parenthesis =
   }
 
 tagname "tagname"
-  = ws [a-zA-Z][_0-9a-zA-Z]* ws { return `'${text()}' = ANY (${options.column}) `; }
+  = ws tag:([a-zA-Z][_0-9a-zA-Z]*) ws { return `'${tag.join("")}' = ANY (${options.column}) `; }
 
 begin_parenthesis = ws "(" ws   { return "(";   }
 end_parenthesis   = ws ")" ws   { return ")";   }

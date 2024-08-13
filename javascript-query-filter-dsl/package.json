@@ -5,7 +5,7 @@
     "type": "module",
     "main": "index.js",
     "scripts": {
-        "peggy": "peggy --format es -o query-filter.js query-filter.pegjs"
+        "peggy": "peggy --format es -o query-filter.js query-filter.peggy"
     },
     "keywords": [],
     "author": "",
