@@ -19,7 +19,7 @@ class Parse {
 let p = new Parse('article', 'tags');
 
 console.log(p.parse("Tag2"));
-console.log(p.parse("Tag2 and Tag3"));
+console.log(p.parse(" Tag2 and Tag3"));
 console.log(p.parse("(Tag2 and Tag3)"));
 console.log(p.parse("(Tag2 and Tag3) or Tag8"));
 console.log(p.parse("Tag1 or (Tag2 and Tag3)"));
