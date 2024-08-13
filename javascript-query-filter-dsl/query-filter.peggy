@@ -21,8 +21,8 @@ parenthesis =
     return `(\n  ${content}\n)`;
   }
 
-tagname "tagname"
-  = ws tag:([a-zA-Z][_0-9a-zA-Z]*) ws { return `'${tag.join("")}' = ANY (${options.column}) `; }
+tagname
+  = ws head:[a-zA-Z] tail:[_0-9a-zA-Z]* ws { return `'${head}${tail.join("")}' = ANY (${options.column})`};
 
 begin_parenthesis = ws "(" ws   { return "(";   }
 end_parenthesis   = ws ")" ws   { return ")";   }
