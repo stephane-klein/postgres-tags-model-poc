@@ -22,6 +22,11 @@ parenthesis =
 tagname
   = ws head:[a-zA-Z] tail:[_0-9a-zA-Z]* ws { return `'${head}${tail.join("")}' = ANY (${options.column})`};
 
+// Uncomment this rule if you prefer to add # prefix on tags, like "#Tag1 or (#Tag2 and #Tag3)"
+// 
+// tagname
+//   = ws [#] head:[a-zA-Z] tail:[_0-9a-zA-Z]* ws { return `'${head}${tail.join("")}' = ANY (${options.column})`};
+
 begin_parenthesis = ws "(" ws   { return "(";   };
 end_parenthesis   = ws ")" ws   { return ")";   };
 and               = ws "and" ws { return "AND"; };
